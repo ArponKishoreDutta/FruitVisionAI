@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Menu, X, Cpu, Zap } from 'lucide-react';
+import { Menu, X, Cpu, Zap, Camera } from 'lucide-react';
 import { HealthResponse } from '../types/prediction';
 
 interface NavbarProps {
@@ -20,9 +20,10 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
 
   const navLinks = [
     { name: 'Home', target: 'hero' },
-    { name: 'Scanner', target: 'scanner' },
+    { name: 'AI Scanner', target: 'scanner' },
+    { name: 'Fruit Catalog', target: 'supported-fruits' },
     { name: 'How It Works', target: 'how-it-works' },
-    { name: 'AI Model', target: 'model-info' },
+    { name: 'Model Info', target: 'model-info' },
   ];
 
   const handleNavClick = (targetId: string) => {
@@ -45,8 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 md:h-20">
-
-          {/* ── Logo ── */}
+          {/* Logo */}
           <div
             onClick={() => handleNavClick('hero')}
             className="flex items-center gap-3 cursor-pointer group"
@@ -56,7 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
               whileTap={{ scale: 0.95 }}
               className="relative w-11 h-11 md:w-12 md:h-12"
             >
-              {/* Animated ring */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-orange-400 animate-spin-slower opacity-70" />
               <div
                 className="relative w-full h-full rounded-2xl flex items-center justify-center text-2xl"
@@ -71,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
                 FruitVision{' '}
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: 'linear-gradient(135deg, #f43f5e, #ec4899, #f97316)', backgroundSize: '200% 200%' }}
+                  style={{ backgroundImage: 'linear-gradient(135deg, #f43f5e, #ec4899, #f97316)' }}
                 >
                   AI
                 </span>
@@ -83,22 +82,21 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
             </div>
           </div>
 
-          {/* ── Desktop Nav ── */}
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-0.5 bg-white/[0.04] p-1.5 rounded-full border border-white/10 backdrop-blur-md">
             {navLinks.map((link) => (
               <button
                 key={link.target}
                 onClick={() => handleNavClick(link.target)}
-                className="relative px-5 py-2 text-sm font-semibold text-slate-300 hover:text-white rounded-full transition-all duration-200 hover:bg-white/10 group"
+                className="relative px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white rounded-full transition-all duration-200 hover:bg-white/10 group"
               >
                 <span className="relative z-10">{link.name}</span>
               </button>
             ))}
           </nav>
 
-          {/* ── Right Side ── */}
+          {/* Right Side */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Health status badge */}
             <motion.div
               animate={{ opacity: [0.8, 1, 0.8] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -139,16 +137,15 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
               className="relative px-5 py-2.5 rounded-full text-white text-sm font-bold flex items-center gap-2 overflow-hidden transition-all"
               style={{
                 background: 'linear-gradient(135deg, #f43f5e, #ec4899, #f97316)',
-                backgroundSize: '200% 200%',
                 boxShadow: '0 4px 20px -4px rgba(244,63,94,0.5)',
               }}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Camera className="w-4 h-4" />
               <span>Scan Fruit</span>
             </motion.button>
           </div>
 
-          {/* ── Mobile Menu Button ── */}
+          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -171,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
         </div>
       </div>
 
-      {/* ── Mobile Drawer ── */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -200,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({ health, onNavigate }) => {
               <div className="pt-3 mt-3 border-t border-white/8 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs text-slate-400">
                   <span className={`h-2 w-2 rounded-full ${isReady ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`} />
-                  <span>{isReady ? 'AI Model Active' : 'Connecting Backend'}</span>
+                  <span>{isReady ? 'Model Ready' : 'Connecting Backend'}</span>
                 </div>
                 <button
                   onClick={() => handleNavClick('scanner')}

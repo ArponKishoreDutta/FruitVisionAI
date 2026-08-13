@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NutritionData } from '../types/prediction';
-import { Flame, Activity, Wheat, HeartPulse, Droplets, Dumbbell } from 'lucide-react';
+import { Flame, Activity, Wheat, HeartPulse, Droplets, Dumbbell, Zap } from 'lucide-react';
 
 interface FruitNutritionProps {
   nutrition: NutritionData;
@@ -12,15 +12,15 @@ interface NutritionItem {
   label: string;
   value: number;
   unit: string;
+  dv?: string; // Daily Value %
   icon: React.ElementType;
   color: string;
   bg: string;
   border: string;
   barColor: string;
-  max: number; // for relative bar width
+  max: number;
 }
 
-// Animated number hook
 function useAnimatedNumber(target: number, duration = 1000) {
   const [current, setCurrent] = useState(0);
 
@@ -54,22 +54,13 @@ const NutritionCard: React.FC<{ item: NutritionItem; delay: number }> = ({ item,
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, ease: 'easeOut' }}
       whileHover={{ y: -4, scale: 1.02 }}
-      className="relative p-4 rounded-2xl overflow-hidden cursor-default transition-shadow duration-200"
+      className="relative p-4 rounded-2xl overflow-hidden cursor-default transition-all duration-200"
       style={{
         background: item.bg,
         border: `1px solid ${item.border}`,
         backdropFilter: 'blur(12px)',
       }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.boxShadow = `0 8px 30px -8px ${item.border}`;
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.boxShadow = 'none';
-      }}
     >
-      {/* Icon */}
       <div className="flex items-center justify-between mb-3">
         <div
           className="w-8 h-8 rounded-xl flex items-center justify-center"
@@ -77,10 +68,16 @@ const NutritionCard: React.FC<{ item: NutritionItem; delay: number }> = ({ item,
         >
           <Icon className={`w-4 h-4 ${item.color}`} />
         </div>
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
+        <div className="flex items-center gap-1">
+          {item.dv && (
+            <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-white/10 text-white font-mono">
+              {item.dv}
+            </span>
+          )}
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.label}</span>
+        </div>
       </div>
 
-      {/* Value */}
       <div className="mb-3">
         <span
           className="text-xl font-extrabold text-white"
@@ -93,9 +90,8 @@ const NutritionCard: React.FC<{ item: NutritionItem; delay: number }> = ({ item,
         <span className="text-xs text-slate-400 font-medium ml-1">{item.unit}</span>
       </div>
 
-      {/* Mini bar */}
       <div
-        className="w-full h-1 rounded-full overflow-hidden"
+        className="w-full h-1.5 rounded-full overflow-hidden"
         style={{ background: 'rgba(255,255,255,0.06)' }}
       >
         <motion.div
@@ -116,17 +112,19 @@ export const FruitNutrition: React.FC<FruitNutritionProps> = ({ nutrition }) => 
       label: 'Calories',
       value: nutrition.calories,
       unit: 'kcal',
+      dv: '3% DV',
       icon: Flame,
       color: 'text-orange-400',
       bg: 'rgba(249,115,22,0.08)',
       border: 'rgba(249,115,22,0.20)',
       barColor: 'linear-gradient(90deg, #f97316, #fb923c)',
-      max: 400,
+      max: 300,
     },
     {
       label: 'Carbs',
       value: nutrition.carbs,
       unit: 'g',
+      dv: '5% DV',
       icon: Wheat,
       color: 'text-amber-400',
       bg: 'rgba(245,158,11,0.08)',
@@ -138,6 +136,7 @@ export const FruitNutrition: React.FC<FruitNutritionProps> = ({ nutrition }) => 
       label: 'Sugar',
       value: nutrition.sugar,
       unit: 'g',
+      dv: 'Low GL',
       icon: Droplets,
       color: 'text-pink-400',
       bg: 'rgba(236,72,153,0.08)',
@@ -149,34 +148,37 @@ export const FruitNutrition: React.FC<FruitNutritionProps> = ({ nutrition }) => 
       label: 'Fiber',
       value: nutrition.fiber,
       unit: 'g',
+      dv: '10% DV',
       icon: HeartPulse,
       color: 'text-emerald-400',
       bg: 'rgba(16,185,129,0.08)',
       border: 'rgba(16,185,129,0.20)',
       barColor: 'linear-gradient(90deg, #10b981, #34d399)',
-      max: 20,
+      max: 15,
     },
     {
       label: 'Protein',
       value: nutrition.protein,
       unit: 'g',
+      dv: '2% DV',
       icon: Dumbbell,
       color: 'text-sky-400',
       bg: 'rgba(14,165,233,0.08)',
       border: 'rgba(14,165,233,0.20)',
       barColor: 'linear-gradient(90deg, #0ea5e9, #38bdf8)',
-      max: 15,
+      max: 10,
     },
     {
       label: 'Fat',
       value: nutrition.fat,
       unit: 'g',
+      dv: '1% DV',
       icon: Activity,
       color: 'text-purple-400',
       bg: 'rgba(168,85,247,0.08)',
       border: 'rgba(168,85,247,0.20)',
       barColor: 'linear-gradient(90deg, #a855f7, #c084fc)',
-      max: 15,
+      max: 10,
     },
   ];
 
@@ -189,19 +191,18 @@ export const FruitNutrition: React.FC<FruitNutritionProps> = ({ nutrition }) => 
         backdropFilter: 'blur(16px)',
       }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/8">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-rose-400" />
+          <Zap className="w-4 h-4 text-rose-400" />
           <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Nutrition Profile
+            Nutritional Profile Breakdown
           </span>
         </div>
         <span
           className="text-[10px] font-bold text-slate-400 px-2 py-1 rounded-md font-mono"
           style={{ background: 'rgba(255,255,255,0.06)' }}
         >
-          per 100g · USDA
+          per 100g serving
         </span>
       </div>
 

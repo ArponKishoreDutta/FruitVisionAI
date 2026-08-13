@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Image as ImageIcon, Sparkles, X, RefreshCw, FileText, CheckCircle2 } from 'lucide-react';
+import { Upload, Image as ImageIcon, Sparkles, X, RefreshCw, FileText, CheckCircle2, Camera, HelpCircle } from 'lucide-react';
+import { CameraCapture } from './CameraCapture';
+import { FRUIT_KNOWLEDGE_BASE } from '../utils/fruitData';
 
 interface ImageUploaderProps {
   onImageSelected: (file: File) => void;
@@ -19,6 +21,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   onAnalyze,
   error,
 }) => {
+  const [activeTab, setActiveTab] = useState<'upload' | 'camera'>('upload');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,10 +54,28 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const validateAndPassFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload a JPG, JPEG, or PNG image.');
+      alert('Please upload a valid JPG, JPEG, PNG, or WEBP image.');
       return;
     }
     onImageSelected(file);
+  };
+
+  // Helper to load sample SVG fruit image into a File object for testing
+  const handleSelectSample = async (fruitName: string) => {
+    const meta = FRUIT_KNOWLEDGE_BASE[fruitName];
+    if (!meta) return;
+
+    try {
+      const res = await fetch(meta.sampleSvg);
+      const blob = await res.blob();
+      const sampleFile = new File([blob], `sample_${fruitName.toLowerCase().replace(/\s+/g, '_')}.png`, {
+        type: 'image/png',
+        lastModified: Date.now(),
+      });
+      onImageSelected(sampleFile);
+    } catch (err) {
+      console.error('Failed to load sample image:', err);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -63,151 +84,47 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
+  const sampleFruits = ['Apple', 'Banana', 'Orange', 'Mango', 'Lemon', 'Red grapes'];
+
   return (
     <div className="w-full">
-      <AnimatePresence mode="wait">
-        {!selectedImage || !imagePreviewUrl ? (
-          /* ── Drop Zone ── */
-          <motion.div
-            key="dropzone"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.3 }}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className="relative cursor-pointer rounded-3xl overflow-hidden group"
-            style={{
-              border: isDragging
-                ? '2px dashed rgba(244,63,94,0.8)'
-                : '2px dashed rgba(255,255,255,0.15)',
-              background: isDragging
-                ? 'rgba(244,63,94,0.08)'
-                : 'rgba(255,255,255,0.025)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: isDragging
-                ? '0 0 60px -10px rgba(244,63,94,0.4), inset 0 0 60px -30px rgba(244,63,94,0.1)'
-                : 'none',
-              transition: 'all 0.3s ease',
-            }}
+      {/* ── Top Input Mode Switcher Tabs ── */}
+      {!selectedImage && (
+        <div className="flex items-center justify-center mb-6">
+          <div
+            className="p-1 rounded-2xl flex items-center gap-1 border border-white/10"
+            style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)' }}
           >
-            {/* Hover gradient overlay */}
-            <div
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              style={{
-                background:
-                  'radial-gradient(ellipse at center, rgba(244,63,94,0.07) 0%, rgba(168,85,247,0.05) 50%, transparent 80%)',
-              }}
-            />
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'upload'
+                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload Image</span>
+            </button>
 
-            {/* Animated corner brackets */}
-            {isDragging && (
-              <>
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-rose-400 rounded-tl-lg z-20" />
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-rose-400 rounded-tr-lg z-20" />
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-rose-400 rounded-bl-lg z-20" />
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-rose-400 rounded-br-lg z-20" />
-              </>
-            )}
+            <button
+              onClick={() => setActiveTab('camera')}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'camera'
+                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Camera className="w-4 h-4" />
+              <span>Live Camera Stream</span>
+            </button>
+          </div>
+        </div>
+      )}
 
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              className="hidden"
-            />
-
-            <div className="relative z-10 flex flex-col items-center justify-center py-16 px-8 text-center">
-              {/* Animated upload icon */}
-              <motion.div
-                animate={
-                  isDragging
-                    ? { scale: [1, 1.1, 1], rotate: [-5, 5, -5, 0] }
-                    : { y: [0, -8, 0] }
-                }
-                transition={
-                  isDragging
-                    ? { duration: 0.5, repeat: Infinity }
-                    : { duration: 3, repeat: Infinity, ease: 'easeInOut' }
-                }
-                className="mb-6"
-              >
-                <div
-                  className={`w-24 h-24 rounded-3xl flex items-center justify-center relative overflow-hidden transition-all duration-300 ${
-                    isDragging ? 'scale-110' : 'group-hover:scale-105'
-                  }`}
-                  style={{
-                    background: isDragging
-                      ? 'linear-gradient(135deg, rgba(244,63,94,0.3), rgba(249,115,22,0.3))'
-                      : 'linear-gradient(135deg, rgba(244,63,94,0.12), rgba(168,85,247,0.12))',
-                    border: isDragging
-                      ? '1.5px solid rgba(244,63,94,0.6)'
-                      : '1.5px solid rgba(255,255,255,0.1)',
-                    boxShadow: isDragging
-                      ? '0 0 40px -8px rgba(244,63,94,0.5)'
-                      : '0 0 20px -8px rgba(244,63,94,0.2)',
-                  }}
-                >
-                  <Upload
-                    className={`w-10 h-10 transition-colors duration-300 ${
-                      isDragging ? 'text-rose-300' : 'text-rose-400'
-                    }`}
-                  />
-                  {/* Pulsing ring */}
-                  <div
-                    className="absolute inset-0 rounded-3xl animate-ping"
-                    style={{
-                      background: isDragging
-                        ? 'rgba(244,63,94,0.2)'
-                        : 'rgba(244,63,94,0.05)',
-                    }}
-                  />
-                </div>
-              </motion.div>
-
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
-                {isDragging ? '✨ Drop it here!' : 'Drop your fruit image'}
-              </h3>
-              <p className="text-slate-400 text-sm mb-8">
-                or click anywhere to browse files
-              </p>
-
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-                className="relative px-7 py-3.5 rounded-2xl text-white font-bold text-sm flex items-center gap-2.5 overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, #f43f5e, #ec4899, #f97316)',
-                  boxShadow: '0 4px 20px -4px rgba(244,63,94,0.5)',
-                }}
-              >
-                <Upload className="w-4 h-4" />
-                <span>Choose Image</span>
-              </motion.button>
-
-              <div className="mt-8 flex items-center gap-3">
-                {['JPG', 'JPEG', 'PNG', 'WEBP'].map((fmt) => (
-                  <span
-                    key={fmt}
-                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-400 border border-white/10"
-                    style={{ background: 'rgba(255,255,255,0.04)' }}
-                  >
-                    {fmt}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          /* ── Image Preview Card ── */
+      <AnimatePresence mode="wait">
+        {selectedImage && imagePreviewUrl ? (
+          /* ── Selected Image Preview Card ── */
           <motion.div
             key="preview"
             initial={{ opacity: 0, scale: 0.97, y: 10 }}
@@ -223,10 +140,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           >
             <div className="p-6 sm:p-8">
               <div className="flex flex-col md:flex-row items-center gap-6">
-
-                {/* Image */}
+                {/* Image Preview Container */}
                 <div className="relative w-full md:w-60 h-60 rounded-2xl overflow-hidden flex-shrink-0 group">
-                  {/* Gradient border */}
                   <div
                     className="absolute inset-0 rounded-2xl z-10 pointer-events-none"
                     style={{
@@ -239,14 +154,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     alt="Selected fruit preview"
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                   />
-                  {/* Ready overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 z-20">
                     <span className="text-xs text-white font-semibold flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                       Ready for AI Analysis
                     </span>
                   </div>
-                  {/* Success badge */}
                   <motion.div
                     initial={{ scale: 0, rotate: -20 }}
                     animate={{ scale: 1, rotate: 0 }}
@@ -258,9 +171,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                   </motion.div>
                 </div>
 
-                {/* File info + Actions */}
+                {/* File Metadata & Actions */}
                 <div className="flex-1 w-full space-y-4">
-                  {/* Header */}
                   <div className="flex items-start justify-between">
                     <div>
                       <span
@@ -284,7 +196,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     </button>
                   </div>
 
-                  {/* File meta */}
                   <div className="flex items-center gap-4 text-xs text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5 text-rose-400" />
@@ -292,15 +203,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     </span>
                     <span className="w-1 h-1 rounded-full bg-slate-600" />
                     <span className="font-mono font-semibold text-slate-300">
-                      {selectedImage.type.replace('image/', '').toUpperCase()}
+                      {selectedImage.type.replace('image/', '').toUpperCase() || 'PNG'}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-slate-600" />
                     <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                      <CheckCircle2 className="w-3 h-3" /> Valid Format
+                      <CheckCircle2 className="w-3 h-3" /> Ready
                     </span>
                   </div>
 
-                  {/* Error */}
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, y: -5 }}
@@ -312,7 +222,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     </motion.div>
                   )}
 
-                  {/* Actions */}
+                  {/* Primary CTA Buttons */}
                   <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
@@ -341,18 +251,135 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                         background: 'rgba(255,255,255,0.06)',
                         border: '1px solid rgba(255,255,255,0.12)',
                       }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.10)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
-                      }}
                     >
                       <RefreshCw className="w-4 h-4" />
                       <span>Change Image</span>
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        ) : activeTab === 'camera' ? (
+          /* ── Camera Capture Mode ── */
+          <motion.div
+            key="cameramode"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+          >
+            <CameraCapture
+              onImageCaptured={(file) => onImageSelected(file)}
+              onCancel={() => setActiveTab('upload')}
+            />
+          </motion.div>
+        ) : (
+          /* ── Dropzone & Sample Images Mode ── */
+          <motion.div
+            key="dropzone"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className="relative cursor-pointer rounded-3xl overflow-hidden group"
+              style={{
+                border: isDragging
+                  ? '2px dashed rgba(244,63,94,0.8)'
+                  : '2px dashed rgba(255,255,255,0.15)',
+                background: isDragging
+                  ? 'rgba(244,63,94,0.08)'
+                  : 'rgba(255,255,255,0.025)',
+                backdropFilter: 'blur(20px)',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+              />
+
+              <div className="relative z-10 flex flex-col items-center justify-center py-14 px-8 text-center">
+                <motion.div
+                  animate={isDragging ? { scale: [1, 1.1, 1] } : { y: [0, -6, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="mb-6"
+                >
+                  <div
+                    className="w-20 h-20 rounded-3xl flex items-center justify-center"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(244,63,94,0.15), rgba(168,85,247,0.15))',
+                      border: '1.5px solid rgba(244,63,94,0.3)',
+                      boxShadow: '0 0 30px -8px rgba(244,63,94,0.3)',
+                    }}
+                  >
+                    <Upload className="w-9 h-9 text-rose-400" />
+                  </div>
+                </motion.div>
+
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
+                  {isDragging ? '✨ Drop image here!' : 'Drop your fruit image here'}
+                </h3>
+                <p className="text-slate-400 text-sm mb-6">
+                  or click to select file from your computer or phone
+                </p>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="px-7 py-3.5 rounded-2xl text-white font-bold text-sm flex items-center gap-2.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #f43f5e, #ec4899, #f97316)',
+                    boxShadow: '0 4px 20px -4px rgba(244,63,94,0.5)',
+                  }}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Choose Image File</span>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Quick Sample Selector Ribbon */}
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-rose-400" /> Or test immediately with a sample:
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {sampleFruits.map((name) => {
+                  const meta = FRUIT_KNOWLEDGE_BASE[name];
+                  if (!meta) return null;
+                  return (
+                    <motion.button
+                      key={name}
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={() => handleSelectSample(name)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 flex items-center gap-2 transition-all hover:text-white"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                      }}
+                    >
+                      <span className="text-base">{meta.emoji}</span>
+                      <span>{name}</span>
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
           </motion.div>
