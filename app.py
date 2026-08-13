@@ -173,7 +173,7 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allowed_html=True,
+    unsafe_allow_html=True,
 )
 
 # -----------------------------------------------------------------------------
@@ -214,7 +214,7 @@ st.markdown(
         <div>{status_html}</div>
     </div>
     """,
-    unsafe_allowed_html=True,
+    unsafe_allow_html=True,
 )
 
 if model is None:
@@ -229,7 +229,7 @@ col_input, col_output = st.columns([1, 1], gap="large")
 # LEFT COLUMN: IMAGE INPUT & ANALYSIS CONTROLS
 # -----------------------------------------------------------------------------
 with col_input:
-    st.markdown('<div class="card-title">📷 Upload Your Fruit</div>', unsafe_allowed_html=True)
+    st.markdown('<div class="card-title">📷 Upload Your Fruit</div>', unsafe_allow_html=True)
     
     input_tab1, input_tab2 = st.tabs(["📁 Upload Image", "📸 Use Camera"])
     
@@ -316,14 +316,14 @@ with col_output:
         conf_pct = results["confidence"] * 100
         
         # Primary Prediction Result Card
-        st.markdown('<div class="card-title">🎯 Prediction Result</div>', unsafe_allowed_html=True)
+        st.markdown('<div class="card-title">🎯 Prediction Result</div>', unsafe_allow_html=True)
         
         res_col1, res_col2 = st.columns([2, 1])
         with res_col1:
-            st.markdown(f'<div class="result-title">{info["name"]}</div>', unsafe_allowed_html=True)
-            st.markdown(f'<div class="scientific-title">Scientific name: {info["scientific_name"]}</div>', unsafe_allowed_html=True)
+            st.markdown(f'<div class="result-title">{info["name"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="scientific-title">Scientific name: {info["scientific_name"]}</div>', unsafe_allow_html=True)
         with res_col2:
-            st.markdown(f'<div class="confidence-large">{conf_pct:.2f}%</div>', unsafe_allowed_html=True)
+            st.markdown(f'<div class="confidence-large">{conf_pct:.2f}%</div>', unsafe_allow_html=True)
             st.caption("Confidence Score")
 
         st.progress(float(results["confidence"]))
@@ -370,15 +370,15 @@ with col_output:
         # Warning & Disclaimer Boxes
         st.markdown(
             '<div class="warning-box">⚠️ <strong>Notice:</strong> Confidence represents the model\'s prediction probability and does not guarantee that the classification is correct.</div>',
-            unsafe_allowed_html=True,
+            unsafe_allow_html=True,
         )
         st.markdown(
             f'<div class="disclaimer-box">{DISCLAIMER}</div>',
-            unsafe_allowed_html=True,
+            unsafe_allow_html=True,
         )
 
     else:
-        st.markdown('<div class="card-title">🎯 Prediction Results</div>', unsafe_allowed_html=True)
+        st.markdown('<div class="card-title">🎯 Prediction Results</div>', unsafe_allow_html=True)
         st.markdown(
             """
             <div style="text-align: center; padding: 48px 16px; color: #94A3B8;">
@@ -387,7 +387,7 @@ with col_output:
                 <div style="font-size: 0.9rem; margin-top: 4px;">Upload or capture a fruit image on the left and click <strong>Analyze Fruit</strong> to see AI classification and nutritional insights.</div>
             </div>
             """,
-            unsafe_allowed_html=True,
+            unsafe_allow_html=True,
         )
 
 # -----------------------------------------------------------------------------
@@ -398,7 +398,7 @@ st.divider()
 col_supp, col_about = st.columns([3, 2], gap="large")
 
 with col_supp:
-    st.markdown('<div class="card-title">🍎 Supported Fruits (11 Classes)</div>', unsafe_allowed_html=True)
+    st.markdown('<div class="card-title">🍎 Supported Fruits (11 Classes)</div>', unsafe_allow_html=True)
     
     fruit_emojis = [
         ("Apple", "🍎"),
@@ -420,11 +420,11 @@ with col_supp:
         with grid_cols[idx % 4]:
             st.markdown(
                 f'<div class="fruit-pill" style="margin-bottom: 8px;">{f_emoji} {f_name}</div>',
-                unsafe_allowed_html=True,
+                unsafe_allow_html=True,
             )
 
 with col_about:
-    st.markdown('<div class="card-title">ℹ️ About the AI Model</div>', unsafe_allowed_html=True)
+    st.markdown('<div class="card-title">ℹ️ About the AI Model</div>', unsafe_allow_html=True)
     
     m_col1, m_col2 = st.columns(2)
     with m_col1:
