@@ -1,6 +1,6 @@
 import { HealthResponse, PredictResponse } from '../types/prediction';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://fruitvisionai-eiou.onrender.com';
 
 /**
  * Checks the health status of the FastAPI backend & model readiness.
