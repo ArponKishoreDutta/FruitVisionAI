@@ -19,3 +19,7 @@ frontend/node_modules/
 
 # Logs
 *.log
+
+# Build output
+dist/
+frontend/dist/
